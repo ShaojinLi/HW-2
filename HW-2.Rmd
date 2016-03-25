@@ -1,6 +1,6 @@
 ---
 title: "MATH 216 Homework 2"
-author: "WRITE YOUR NAME HERE"
+author: "Shaojin Li"
 output: html_document
 ---
 
@@ -8,6 +8,8 @@ output: html_document
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(foreign))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(pander))
 ```
 
 
@@ -15,16 +17,10 @@ suppressPackageStartupMessages(library(foreign))
 
 Please indicate
 
-* Who you collaborated with:
-* Roughly how much time you spent on this HW:
-* What gave you the most trouble:
-* Any comments you have: 
-
-
-
-
-
-
+* Who you collaborated with: None
+* Roughly how much time you spent on this HW: 10hrs
+* What gave you the most trouble: I am very confused with question 2 in general. How much information should I show? How deep I should dig into the data? Very confused. I will add more data analysis in my second submission. 
+* Any comments you have: Need to work with others next time...Because my schedule is really off this week I did not get to work with anyone, which made it really hard for me to figure out question two.
 
 ## Question 1:
 
@@ -44,57 +40,166 @@ pollution <- read.dta(url) %>%
 ### a)
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
+#(a) Create a scatterplot of mortality rate versus level of nitric oxides. 
+#Do you think linear regression will fit these data well? 
+#Fit the regression and evaluate a residual plot from the regression.
+
+#Scatterplot
+plot1a1<-ggplot(data=pollution, aes(x=nox, y=mort))+ 
+  geom_point()+
+  ggtitle("Mortaility Rate vs.Nitric Oxides")+
+  xlab("Relative Nitric Oxides Pollution Potential")+
+  ylab("Total Age-adjusted Mortality Rate per 100,000")
+plot1a1
+
+#Fit regression line
+plot1a1<-plot1a1+
+  geom_smooth(method="lm")
+plot1a1
+
+#Regression & get residuals 
+model1a<-lm(mort~nox, data=pollution)
+model1a
+
+resid_1a<-resid(model1a)
+
+#Plot redisuals
+plot1a2<-ggplot(data=pollution, aes(x=nox, y=resid_1a))+
+  geom_point()+
+  ggtitle("Residuals vs.Nitric Oxides")+
+  xlab("Relative Nitric Oxides Pollution Potential")+
+  ylab("Residuals")+
+  geom_hline(yintercept=0, color="blue")
+plot1a2
 
 ```
-
+I do not think linear regression will fit these data well because the scatterplot does not show a linear relationship of the two variables. Looking at the resituals graph we can see that although residuals are centered around zero, they are not randomly dispersed as they heavely skewed within the 0-50 range. 
 
 ### b)
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
+#(b) Find an appropriate transformation that will result in data more #appropriate for linear regression. 
+#Fit a regression to the transformed data and evaluate the new residual plot.
+
+#Log plot
+pollution<-mutate(pollution, log_nox=log(nox)) 
+
+plot1b1<-ggplot(data=pollution, aes(x=log_nox, y=mort))+ 
+  geom_point()+
+  ggtitle("Mortaility Rate vs.Log of Nitric Oxides")+
+  xlab("Log of Relative Nitric Oxides Pollution Potential")+
+  ylab("Total Age-adjusted Mortality Rate per 100,000")+
+  geom_smooth(method="lm")
+plot1b1
+
+#Log regression & get residuals 
+model1b<-lm(mort~log_nox, data=pollution)
+model1b
+
+resid_1b<-resid(model1b)
+
+#Plot residuals
+plot1b2<-ggplot(data=pollution, aes(x=log_nox, y=resid_1b))+
+  geom_point()+
+  ggtitle("Residuals vs.Log of Nitric Oxides")+
+  xlab("Log of Relative Nitric Oxides Pollution Potential")+
+  ylab("Residuals")+
+  geom_hline(yintercept=0, color="blue")
+plot1b2
 
 ```
-
+As demonstrated in the scatterplot, a log transformation will result in data more appropriate for linear regression as it better represents the correlationship between nitric oxides and mortality rate. The residuals plot proves that under a log transformation, the residuals are more randomly dispersed while still centered around zero.
 
 ### c)
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
+#(c) Interpret the slope coefficient from the model you chose in (b).
+
+coefficients(model1b)
+kable(confint(model1b), digits=3)
 
 ```
+The slope coefficient from the log model predicts that for 1 percent increase in nitric oxides pollution potential, there is a 15.3 increase in the total age-adjusted mortality rate per 100,000. The confidence interval is [2.133, 28.538], which means that we are 95% confident that the increase of mortality rate per 100,000 due to 1 percent increase in nitric oxides will be between 2.133 and 28.538. 
 
-
-### d)
+### d) Now fit a model predicting mortality rate using levels of nitric oxides, sulfur dioxide, and hydrocarbons as inputs. Use appropriate transformations when helpful. Plot the fitted regression model and interpret the coefficients.
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
 
-```
+#Make scatterplots to find the correlationship
+ggplot(data=pollution, aes(x=so2, y=mort))+ 
+  geom_jitter()
+ggplot(data=pollution, aes(x=hc, y=mort))+ 
+  geom_jitter()
+  #The plots of sulfur dioxide and hydrocarbons look pretty similar to the
+  #pattern of nitric oxides, so I decided to apply log transformations on these
+  #variables as well.
 
+#Plot regression model
+pollution<-mutate(pollution, log_so2=log(so2)) %>%
+  mutate (log_hc=log(hc))
+
+plot1d1<-ggplot(data=pollution, aes(x=log_hc, y=mort))+ 
+  geom_point()+
+  ggtitle("Mortaility Rate vs.Log of Hydrocarbons")+
+  xlab("Log of Relative Hydrocarbons Pollution Potential")+
+  ylab("Total Age-adjusted Mortality Rate per 100,000")+
+  geom_smooth(method="lm")
+plot1d1
+
+plot1d2<-ggplot(data=pollution, aes(x=log_so2, y=mort))+ 
+  geom_point()+
+  ggtitle("Mortaility Rate vs.Log of Sulfur Dioxide")+
+  xlab("Log of Relative Sulfur Dioxide Pollution Potential")+
+  ylab("Total Age-adjusted Mortality Rate per 100,000")+
+  geom_smooth(method="lm")
+plot1d2
+
+#Get regression table
+model1d<-lm(mort~log_nox + log_so2 + log_hc, data=pollution)
+pander(model1d, digits=3)
+kable(confint(model1d), digits=3)
+
+```
+The slope coefficient from the log model predicts that for 1 percent increase in the pollution potential of nitric oxides, sulfur dioxide, and hydrocarbons, there is respectively a 58.3 increase, 11.8 increase, and 57.3 decrease in the total age-adjusted mortality rate per 100,000. The confidence interval of nitric oxides, sulfur dioxide, and hydrocarbons is [14.8, 101.9], [-2.6, 26.1], and [-96.2, -18.4] respectively, which means that the prediction of sulfur dioxide is not significant because its confidence interval contains zero.
 
 ### e)
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
+#(e) Cross-validate: fit the model you chose above to the first half of the data
+#and then predict for the second half. 
+#(You used all the data to construct the model in (d), so this is not really
+#cross-validation, but it gives a sense of how the steps of cross-validation can
+#be implemented.)
+
+#I want to get a random selection of the data and then get the rest of the data,
+#but don't know how to do so. So just get two random selescted samples for this submission.
+samp1<-pollution[sample(nrow(pollution), 30), ] 
+samp2<-pollution[sample(nrow(pollution), 30), ] 
+
+model1e<-lm(mort~log_nox + log_so2 + log_hc, data=samp1)
+prediction<-predict(model1e, data=samp2)
+
+plot1e<-ggplot(data=samp2, aes(x=prediction, y=mort))+ 
+  geom_point()+
+  ggtitle("Fitted vs.True Value of Pollution Data")+
+  xlab("Prediction")+
+  ylab("True Value")
+plot1e
 
 ```
 
 
 ### f) What do you think are the reasons for using cross-validation?
 
-
-
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
 
 ```
-
-
-
-
-
-
+Cross-validation helps us to evaluate the precision of our model, aka. how well it can predicte the correlationship between variables. It helps us to know whether we can apply our model to other data sets and be confident of the predicted results. 
 
 ## Question 2:
 
 Perform an Exploratory Data Analysis (EDA) of the OkCupid data, keeping in mind 
-in HW-3, you will be fitting a logistic regression to predict gender. What do I mean by
-EDA?
+in HW-3, you will be fitting a logistic regression to predict gender. What do I mean by EDA?
 
 * Visualizations
 * Tables
@@ -106,16 +211,101 @@ Lec09 to the project directory `HW-2`.
 ```{r, echo=FALSE, cache=TRUE}
 # DO NOT EDIT THIS SECTION!
 profiles <- read.csv("profiles.csv", header=TRUE) %>% tbl_df()
+
 ```
+
+What is our sample? Look at demographic information
+```{r, echo=FALSE, fig.width=12, fig.height=6}
+#From Lec9
+# Split off the essays into a separate data.frame
+essays<-select(profiles, contains("essay"))
+profiles<-select(profiles, -contains("essay"))
+# Define a binary outcome variable
+profiles<-mutate(profiles, is_female = ifelse(sex=="f", 1, 0))
+
+#We are intereted in gender info in order to fit a logistic regression to #predict gender in HW3
+mean(profiles$is_female)
+  #Only 40.2% female
+
+#Delete variables whose gender information is missing
+profiles<-filter(profiles, sex!="")
+
+#Age info
+age<-ggplot(data=profiles) +
+  geom_histogram(aes(x=age, y=..density..)) +
+  facet_wrap(~sex, ncol=1) +
+  ggtitle("Age")
+age
+
+#Heights info
+heights<-ggplot(data=profiles, aes(x=height, y=is_female)) +
+  geom_jitter() +
+  ggtitle("Height vs. Gender")+
+  ylab("Female?")+
+  xlab("Height")
+heights
+ 
+#Age, height, income stats table
+#Numeric variables
+demo<-profiles %>% 
+  group_by(sex) %>% 
+  summarise (age_mean=mean(age, na.rm=TRUE), 
+          age_sd=sd(age), 
+          height_mean=mean(height, na.rm=TRUE), 
+          height_sd=sd(height, na.rm=TRUE),  
+          income_mean=mean(ifelse(income>=0, income,NA),na.rm=TRUE),
+          income_sd=sd(ifelse(income>=0, income,NA),na.rm=TRUE)) 
+
+kable(demo, digits=2)
+
+```
+This sample consists of only 40.2% female. By looking at the age plot and the height plot, we can see that male is on average taller than female, but cannot see a huge difference in terms of age. From the stats table we can see that in our sample, male is on average taller than female and has higher income. Male is on average younger than female by 0.8 year and has a smaller standard deviation.
+
+#Ethnicity info
+Ethinicity can be catagorized as white, black, asian, hispanic/latin, and other. But in our dataset many people report themselves belong to multiple ethinicity groups, so I don't know a better way to show ethnicity information.
+#Education info
+Due to time constraint this time, I plan to dig into education information for my next submission.
+
+```{r, echo=FALSE, fig.width=12, fig.height=6}
+
+#Gender stats
+sex<-profiles %>%
+  group_by(sex) %>%
+  tally() %>%
+  rename(total_sex=n)
+
+#Status info by sex
+#Drop unknown?
+status_sex<-profiles %>%
+  group_by(sex, status) %>% 
+  tally() %>%
+  rename (n_people=n) 
+
+prop_sex <-inner_join (status_sex, sex, by="sex") %>%
+  mutate (percent_status=100*n_people/total_sex) 
+
+kable(prop_sex, digits=2)
+
+#Orientation info
+ori_sex<-profiles %>%
+  group_by(sex, orientation) %>% 
+  tally() %>%
+  rename (n_people=n)
+
+plot_ori_sex<-ggplot(ori_sex, aes(x=sex, y=n_people, fill=orientation))+
+  geom_bar(stat="identity")+
+  xlab("Gender") + 
+  ylab("Number of People") +
+  ggtitle("Orientation vs. Sex")
+plot_ori_sex
+
+```
+The status table shows us that in our sample, the proportions of single male and single female are similar. The orientation plot shows that there are proportionally more bisexual female than male. 
 
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
-# Feel free to make multiple code blocks, but set echo, fig.width, fig.height as 
-# above
-```
 
 
-```{r, echo=FALSE, fig.width=12, fig.height=6}
-# Feel free to make multiple code blocks, but set echo, fig.width, fig.height as 
-# above
+
 ```
+
