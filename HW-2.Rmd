@@ -261,9 +261,10 @@ kable(demo, digits=2)
 ```
 This sample consists of only 40.2% female. By looking at the age plot and the height plot, we can see that male is on average taller than female, but cannot see a huge difference in terms of age. From the stats table we can see that in our sample, male is on average taller than female and has higher income. Male is on average younger than female by 0.8 year and has a smaller standard deviation.
 
-#Ethnicity info
+Ethnicity info:
 Ethinicity can be catagorized as white, black, asian, hispanic/latin, and other. But in our dataset many people report themselves belong to multiple ethinicity groups, so I don't know a better way to show ethnicity information.
-#Education info
+
+Education info:
 Due to time constraint this time, I plan to dig into education information for my next submission.
 
 ```{r, echo=FALSE, fig.width=12, fig.height=6}
