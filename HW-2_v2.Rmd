@@ -259,7 +259,9 @@ heights<-ggplot(data=profiles, aes(x=height, y=is_female)) +
   xlab("Height")
 heights
 
-#We can see from the graph that some people report their heights to be less than 27 inches, which is unreasonable. So we replace those with a N/A in the data in order to avoid outliers in the next step.
+#We can see from the graph that some people report their heights to be less than 
+#27 inches, which is unreasonable. So we replace those with a N/A in the data 
+#in order to avoid outliers in the next step.
 profiles$height[profiles$height<27] <- NA
 
 #Age, height, income stats table
